@@ -4,6 +4,7 @@ from .models import Product, Color, Contact, Category, News, Cart
 from .serializers import ProductSerializer, CategorySerializer, ColorSerializer, NewsSerializer, ContactSerializer, CartSerializer
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -32,3 +33,4 @@ class ContactViewSet(viewsets.ModelViewSet):
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
+    permission_classes = [IsAuthenticated]
