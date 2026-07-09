@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import Product, Color, Contact, Category, News, Cart
-from .serializers import ProductSerializer, CategorySerializer, ColorSerializer, NewsSerializer, ContactSerializer, CartSerializer
+from .models import Product, Color, Contact, Category, News, Cart, Order, OrderItem
+from .serializers import ProductSerializer, CategorySerializer, ColorSerializer, NewsSerializer, ContactSerializer, CartSerializer, OrderItemSerializer,OrderSerializer
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
@@ -33,4 +33,14 @@ class ContactViewSet(viewsets.ModelViewSet):
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
+    permission_classes = [IsAuthenticated]
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+class OrderItemViewSet(viewsets.ModelViewSet):
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer
     permission_classes = [IsAuthenticated]
