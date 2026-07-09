@@ -1,5 +1,5 @@
 from rest_framework import routers
-from .views import ProductViewSet, ColorViewSet, CategoryViewSet, ContactViewSet, NewsViewSet, CartViewSet, OrderItemViewSet, OrderViewSet
+from .views import ProductViewSet, ColorViewSet, CategoryViewSet, ContactViewSet, NewsViewSet, CartViewSet, OrderItemViewSet, PaymentViewSet, OrderViewSet
 router = routers.DefaultRouter()
 router.register(r'product', ProductViewSet)
 router.register(r'color', ColorViewSet)
@@ -9,4 +9,5 @@ router.register(r'contact', ContactViewSet)
 router.register(r'cart', CartViewSet)
 router.register(r'order', OrderViewSet)
 router.register(r'orderitem', OrderItemViewSet)
+router.register(r'payment', PaymentViewSet)
 urlpatterns = router.urls

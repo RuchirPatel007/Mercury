@@ -100,3 +100,26 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
+    
+class Payment(models.Model):
+    order = models.ForeignKey(Order,on_delete=models.CASCADE)
+    total = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00
+    )
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('SUCCESS', 'success'),
+        ('FAILED', 'failed'),
+    ]
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='PENDING'
+    )
+    date = models.DateTimeField(auto_now_add=True)
+    payment_id = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return self.status
