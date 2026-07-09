@@ -127,3 +127,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
+
+STRIPE_PUBLIC_KEY = 'pk_test_51Tr89xLjq8EzQHA8jbZ975R8ClIpzsAOnByqj4jsXKuA4teqHgSYmnBgi8aF7nTjEimdLBppfIMERdAG5s2fiXjx00DdsD9qoq'
+STRIPE_SECRET_KEY = 'sk_test_51Tr89xLjq8EzQHA8KLgKrV8idGcFymEniA0rB4cZsNoyYREHZmOpWQURVl1EXbcNemjU6fh4ZfZnYjxtowFY335v00WVFE9VVe'

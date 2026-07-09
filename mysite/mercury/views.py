@@ -5,6 +5,12 @@ from .serializers import ProductSerializer, CategorySerializer, ColorSerializer,
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+import stripe
+from django.conf import settings
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 # Create your views here.
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -49,3 +55,16 @@ class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
+
+class CreatePaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        order_id = request.data.get('order_id')
+        order = Order.objects.get(id=order_id)
+        intent = stripe.PaymentIntent.create(
+            amount=int(order.total * 100),
+            currency='aud',
+        )
+        return Response({
+            'client_secret': intent.client_secret
+        })
