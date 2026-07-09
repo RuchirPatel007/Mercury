@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fleet — Mercury</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="products">
+  <header id="site-header"></header>
+
+  <main class="page-body">
+    <div class="container">
+      <div class="page-title-block">
+        <div class="hero-eyebrow">// full fleet</div>
+        <h1>Every aircraft, one deck.</h1>
+      </div>
+
+      <div class="catalog-layout">
+        <aside class="filters">
+          <h4>Category</h4>
+          <div id="category-list">
+            <a class="filter-option active" data-cat="">All aircraft</a>
+          </div>
+        </aside>
+
+        <div>
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search the fleet by name…">
+          </div>
+          <div class="grid" id="product-grid">
+            <div class="loading-text">Loading aircraft…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    let currentCategory = '';
+    let searchTimer = null;
+
+    function productCardHTML(p) {
+      return `
+        <div class="card">
+          <a href="product.html?id=${p.id}" class="card-media">
+            ${p.image ? `<img src="${mediaUrl(p.image)}" alt="${p.name}">` : ''}
+          </a>
+          <div class="card-body">
+            <a href="product.html?id=${p.id}"><h3>${p.name}</h3></a>
+            <div class="card-price">$${p.price}</div>
+            <div class="chip-row">
+              ${specChip('speed', p.speed, 'km/h')}
+              ${specChip('range', p.range_max, 'km')}
+              ${specChip('battery', p.battery, 'min')}
+              ${p.gps ? specChip('gps', 'GPS', 'on') : ''}
+            </div>
+            <div class="card-actions">
+              <a href="product.html?id=${p.id}" class="btn-outline">Details</a>
+              <button class="btn" onclick="Cart.add(${p.id}); this.textContent='Added ✓';">Add to cart</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    async function loadCategories() {
+      const el = document.getElementById('category-list');
+      try {
+        const cats = await Api.get('/category/');
+        const list = Array.isArray(cats) ? cats : cats.results || [];
+        el.innerHTML += list.map(c => `<a class="filter-option" data-cat="${c.id}">${c.name}</a>`).join('');
+        el.querySelectorAll('.filter-option').forEach(opt => {
+          opt.addEventListener('click', () => {
+            el.querySelectorAll('.filter-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            currentCategory = opt.dataset.cat;
+            loadProducts();
+          });
+        });
+      } catch (err) {
+        // Non-fatal — category filter just won't populate.
+        console.error(friendlyError(err));
+      }
+    }
+
+    async function loadProducts() {
+      const el = document.getElementById('product-grid');
+      el.innerHTML = '<div class="loading-text">Loading aircraft…</div>';
+      const search = document.getElementById('search-input').value.trim();
+      const params = new URLSearchParams();
+      if (currentCategory) params.set('category', currentCategory);
+      if (search) params.set('search', search);
+      try {
+        const data = await Api.get(`/product/?${params.toString()}`);
+        const list = Array.isArray(data) ? data : data.results || [];
+        if (!list.length) {
+          el.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><h3>No aircraft match that search.</h3><p>Try a different name or category.</p></div>';
+          return;
+        }
+        el.innerHTML = list.map(productCardHTML).join('');
+      } catch (err) {
+        el.innerHTML = `<div class="error-text">${friendlyError(err)}</div>`;
+      }
+    }
+
+    document.getElementById('search-input').addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadProducts, 350);
+    });
+
+    loadCategories();
+    loadProducts();
+  </script>
+</body>
+</html>

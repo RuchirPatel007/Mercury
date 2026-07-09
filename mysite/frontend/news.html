@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dispatch — Mercury</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="news">
+  <header id="site-header"></header>
+
+  <main class="page-body">
+    <div class="container">
+      <div class="page-title-block">
+        <div class="hero-eyebrow">// field reports</div>
+        <h1>The dispatch</h1>
+      </div>
+      <div class="grid" id="news-grid">
+        <div class="loading-text">Loading updates…</div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    async function loadNews() {
+      const el = document.getElementById('news-grid');
+      try {
+        const data = await Api.get('/news/');
+        const list = Array.isArray(data) ? data : data.results || [];
+        if (!list.length) { el.innerHTML = '<div class="loading-text">No dispatches yet.</div>'; return; }
+        el.innerHTML = list.map(n => `
+          <a href="news-detail.html?id=${n.id}" class="card news-card">
+            <div class="card-media">${n.image ? `<img src="${mediaUrl(n.image)}" alt="${n.title}">` : ''}</div>
+            <div class="card-body">
+              <div class="news-meta">${n.date} · ${n.author}</div>
+              <h3>${n.title}</h3>
+              <p style="margin:0;font-size:13px;">${(n.content || '').slice(0, 100)}${n.content && n.content.length > 100 ? '…' : ''}</p>
+            </div>
+          </a>`).join('');
+      } catch (err) {
+        el.innerHTML = `<div class="error-text">${friendlyError(err)}</div>`;
+      }
+    }
+    loadNews();
+  </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mercury — Dispatch</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="news">
+  <header id="site-header"></header>
+
+  <main class="page-body">
+    <div class="container">
+      <div id="article-root" class="news-article">
+        <div class="loading-text">Loading article…</div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    async function loadArticle() {
+      const root = document.getElementById('article-root');
+      const id = new URLSearchParams(window.location.search).get('id');
+      if (!id) { root.innerHTML = '<div class="error-text">No article specified.</div>'; return; }
+      try {
+        const n = await Api.get(`/news/${id}/`);
+        root.innerHTML = `
+          <div class="hero-eyebrow">// field report</div>
+          <h1>${n.title}</h1>
+          <div class="news-meta" style="margin-bottom:20px;">${n.date} · ${n.author}</div>
+          ${n.image ? `<img src="${mediaUrl(n.image)}" alt="${n.title}">` : ''}
+          <div class="content">${n.content}</div>
+          <p style="margin-top:32px;"><a href="news.html" style="color:var(--accent-2);">← Back to the dispatch</a></p>`;
+      } catch (err) {
+        root.innerHTML = `<div class="error-text">${friendlyError(err)}</div>`;
+      }
+    }
+    loadArticle();
+  </script>
+</body>
+</html>

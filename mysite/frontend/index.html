@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mercury — Drones built for the mission</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="home">
+  <header id="site-header"></header>
+
+  <main class="page-body">
+    <div class="container">
+      <section class="hero">
+        <div>
+          <div class="hero-eyebrow">// telemetry-grade hardware</div>
+          <h1>Command the sky with precision.</h1>
+          <p class="lead">Mercury builds drones for people who need the numbers to be right — range, payload, and flight time you can actually plan a mission around.</p>
+          <div class="hero-actions">
+            <a href="products.html" class="btn">Browse the fleet</a>
+            <a href="news.html" class="btn-outline">Latest dispatch</a>
+          </div>
+        </div>
+        <div class="hero-visual hud-frame">
+          <span class="hud-corner-tr"></span><span class="hud-corner-bl"></span>
+          <img id="hero-image" src="" alt="" style="display:none;">
+          <div id="hero-fallback" class="chip-row" style="padding:20px;"></div>
+          <div class="hero-telemetry" id="hero-telemetry"></div>
+        </div>
+      </section>
+
+      <div class="section-head">
+        <h2>Featured fleet</h2>
+        <a href="products.html" class="see-all">View all →</a>
+      </div>
+      <div class="grid" id="featured-products">
+        <div class="loading-text">Loading aircraft…</div>
+      </div>
+
+      <div class="section-head">
+        <h2>Latest from the dispatch</h2>
+        <a href="news.html" class="see-all">All updates →</a>
+      </div>
+      <div class="grid" id="featured-news">
+        <div class="loading-text">Loading updates…</div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    async function loadFeaturedProducts() {
+      const el = document.getElementById('featured-products');
+      try {
+        const products = await Api.get('/product/');
+        const list = (Array.isArray(products) ? products : products.results || []).slice(0, 4);
+        if (!list.length) { el.innerHTML = '<div class="loading-text">No aircraft in the fleet yet.</div>'; return; }
+        el.innerHTML = list.map(productCardHTML).join('');
+
+        // populate hero with the first product's telemetry
+        const first = list[0];
+        if (first) {
+          const heroImg = document.getElementById('hero-image');
+          const heroFallback = document.getElementById('hero-fallback');
+          if (first.image) {
+            heroImg.src = mediaUrl(first.image);
+            heroImg.alt = first.name;
+            heroImg.style.display = 'block';
+          } else {
+            heroFallback.innerHTML = `<h3 style="margin:0;">${first.name}</h3>`;
+          }
+          document.getElementById('hero-telemetry').innerHTML = `
+            ${specChip('speed', first.speed, 'km/h')}
+            ${specChip('range', first.range_max, 'km')}
+            ${specChip('battery', first.battery, 'min')}
+          `;
+        }
+      } catch (err) {
+        el.innerHTML = `<div class="error-text">${friendlyError(err)}</div>`;
+      }
+    }
+
+    function productCardHTML(p) {
+      return `
+        <div class="card">
+          <a href="product.html?id=${p.id}" class="card-media">
+            ${p.image ? `<img src="${mediaUrl(p.image)}" alt="${p.name}">` : ''}
+          </a>
+          <div class="card-body">
+            <a href="product.html?id=${p.id}"><h3>${p.name}</h3></a>
+            <div class="card-price">$${p.price}</div>
+            <div class="chip-row">
+              ${specChip('speed', p.speed, 'km/h')}
+              ${specChip('battery', p.battery, 'min')}
+            </div>
+            <div class="card-actions">
+              <a href="product.html?id=${p.id}" class="btn-outline">Details</a>
+              <button class="btn" onclick="Cart.add(${p.id}); this.textContent='Added ✓';">Add to cart</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    async function loadFeaturedNews() {
+      const el = document.getElementById('featured-news');
+      try {
+        const news = await Api.get('/news/');
+        const list = (Array.isArray(news) ? news : news.results || []).slice(0, 3);
+        if (!list.length) { el.innerHTML = '<div class="loading-text">No dispatches yet.</div>'; return; }
+        el.innerHTML = list.map(n => `
+          <a href="news-detail.html?id=${n.id}" class="card news-card">
+            <div class="card-media">${n.image ? `<img src="${mediaUrl(n.image)}" alt="${n.title}">` : ''}</div>
+            <div class="card-body">
+              <div class="news-meta">${n.date} · ${n.author}</div>
+              <h3>${n.title}</h3>
+            </div>
+          </a>`).join('');
+      } catch (err) {
+        el.innerHTML = `<div class="error-text">${friendlyError(err)}</div>`;
+      }
+    }
+
+    loadFeaturedProducts();
+    loadFeaturedNews();
+  </script>
+</body>
+</html>
